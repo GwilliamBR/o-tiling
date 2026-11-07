@@ -252,6 +252,17 @@
             <summary>Focus right window</summary>
         </key>
 
+        <!-- Launcher -->
+        <key type="as" name="activate-launcher">
+            <default><![CDATA[['<Super>slash']]]></default>
+            <summary>Open the launcher</summary>
+        </key>
+
+        <key type="b" name="fullscreen-launcher">
+            <default>false</default>
+            <summary>Allow showing the launcher above fullscreen windows</summary>
+        </key>
+
         <!-- Window Management Keys -->
         <key type="as" name="toggle-stacking">
             <default><![CDATA[['s']]]></default>

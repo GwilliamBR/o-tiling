@@ -41,6 +41,8 @@ import type { WindowAnimationStyle } from './ui/window_animation.js';
 import { ThemeConsistencyManager } from './ui/theme_consistency/index.js';
 import { PanelTransparencyManager } from './ui/panel_transparency.js';
 import { OverviewLayoutManager } from './ui/overview_layout.js';
+import { Overview } from 'resource:///org/gnome/shell/ui/overview.js';
+import { Launcher } from './ui/launcher/launcher.js';
 import { applyThemeConsistency, restoreGtkDefaults } from './ui/theme_consistency/apply.js';
 
 
@@ -115,6 +117,7 @@ export class Ext extends Ecs.System<ExtEvent> {
     overlay!: St.Widget; // An overlay which shows a preview of where a window will be moved
     overlay_label!: St.Label; // Text hint ("Stack", "Swap", "Split", ...) shown inside the overlay while dragging
     dbus!: dbus_service.Service; // DBus
+    launcher!: Launcher; // Application launcher, window search, and calculator dialog (backed by pop-launcher)
 
     // State
 
@@ -300,6 +303,7 @@ export class Ext extends Ecs.System<ExtEvent> {
         });
         this.overlay.add_child(this.overlay_label);
         this.dbus = new dbus_service.Service();
+        this.launcher = new Launcher(this);
 
         this.displays[0] = display.get_primary_monitor();
 
@@ -472,12 +476,16 @@ export class Ext extends Ecs.System<ExtEvent> {
         this.dbus.FocusDown = () => this.focus_down();
         this.dbus.FocusLeft = () => this.focus_left();
         this.dbus.FocusRight = () => this.focus_right();
+        this.dbus.Launcher = () => {
+            if (!this._ext_soft_disabled) this.launcher.open(this);
+        };
         this.dbus.WindowFocus = (window: [number, number]) => {
             const target_window = this.windows.get(window);
             if (target_window) {
                 target_window.activate();
                 this.on_focused(target_window);
             }
+            this.launcher.close();
         };
 
         this.dbus.WindowHighlight = (window: [number, number]) => {
@@ -502,6 +510,7 @@ export class Ext extends Ecs.System<ExtEvent> {
             const target = this.windows.get(win);
             // D-Bus input: caller may reference a window that already closed
             if (target) target.meta.delete(Clutter.get_current_event_time());
+            this.launcher.close();
         };
     }
 
@@ -555,6 +564,7 @@ export class Ext extends Ecs.System<ExtEvent> {
         this.injections_remove();
         this.signals_remove();
         this.exit_modes();
+        this.launcher.destroy();
         this.hide_all_borders();
         this.keybindings.disable(this.keybindings.global).disable(this.keybindings.window_focus).disable(this.keybindings.workspace_numbers);
 
@@ -982,6 +992,7 @@ export class Ext extends Ecs.System<ExtEvent> {
 
     exit_modes() {
         this.tiler.exit(this);
+        if (this.launcher?.is_open()) this.launcher.close();
         this.hide_drag_hint();
     }
 
@@ -1139,6 +1150,16 @@ export class Ext extends Ecs.System<ExtEvent> {
     }
 
     injections_add() {
+        // While the launcher is open, the Super key (Overview toggle) closes it instead.
+        const launcher = this.launcher;
+        const toggle_overview = Overview.prototype.toggle;
+        this.inject(Overview.prototype, 'toggle', function (this: unknown) {
+            if (launcher.is_open()) {
+                launcher.dismiss();
+                return;
+            }
+            toggle_overview.call(this);
+        });
     }
 
     injections_remove() {
@@ -3064,6 +3085,7 @@ export class Ext extends Ecs.System<ExtEvent> {
 
         // 6. Remove GNOME Shell injections
         this.injections_remove();
+        this.launcher.close();
 
         // 7. Clear pending timers/sources
         for (const key of Object.keys(this._timeouts)) {

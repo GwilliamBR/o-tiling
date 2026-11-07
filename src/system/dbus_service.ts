@@ -1,11 +1,25 @@
 import Gio from 'gi://Gio';
+import * as log from '../utils/log.js';
 
-const IFACE: string = `<node>
-  <interface name="org.gnome.shell.extensions.OTiling">
+/**
+ * pop-launcher's "Pop Shell Windows" plugin talks to this D-Bus name. Exporting it as well lets
+ * the window search work without changes to pop-launcher. If Pop Shell already owns the name,
+ * this one is simply not acquired.
+ */
+const POP_SHELL_BUS_NAME = 'com.System76.PopShell';
+const POP_SHELL_PATH = '/com/System76/PopShell';
+
+const OWN_BUS_NAME = 'org.gnome.shell.extensions.OTiling';
+const OWN_PATH = '/org/gnome/shell/extensions/OTiling';
+
+function interface_xml(name: string): string {
+    return `<node>
+  <interface name="${name}">
     <method name="FocusLeft"/>
     <method name="FocusRight"/>
     <method name="FocusUp"/>
     <method name="FocusDown"/>
+    <method name="Launcher"/>
     <method name="WindowFocus">
         <arg type="(uu)" direction="in" name="window"/>
     </method>
@@ -20,49 +34,50 @@ const IFACE: string = `<node>
     </method>
   </interface>
 </node>`;
+}
+
+interface Export {
+    object: Gio.DBusExportedObject;
+    owner_id: number;
+}
 
 export class Service {
-    dbus: any;
-    id: any;
+    private exports: Array<Export> = [];
 
     FocusLeft: () => void = () => {};
     FocusRight: () => void = () => {};
     FocusUp: () => void = () => {};
     FocusDown: () => void = () => {};
+    Launcher: () => void = () => {};
     WindowFocus: (window: [number, number]) => void = () => {};
     WindowHighlight: (window: [number, number]) => void = () => {};
     WindowList: () => Array<[[number, number], string, string, string]> = () => [];
     WindowQuit: (window: [number, number]) => void = () => {};
 
     constructor() {
-        this.dbus = Gio.DBusExportedObject.wrapJSObject(IFACE, this);
+        this.export_as(OWN_BUS_NAME, OWN_PATH);
+        this.export_as(POP_SHELL_BUS_NAME, POP_SHELL_PATH);
+    }
 
-        const onBusAcquired = (conn: any) => {
-            this.dbus.export(conn, '/org/gnome/shell/extensions/OTiling');
-        };
+    private export_as(bus_name: string, path: string) {
+        const object = Gio.DBusExportedObject.wrapJSObject(interface_xml(bus_name), this);
 
-        function onNameAcquired() {}
-
-        function onNameLost() {}
-
-        this.id = Gio.bus_own_name(
+        const owner_id = Gio.bus_own_name(
             Gio.BusType.SESSION,
-            'org.gnome.shell.extensions.OTiling',
+            bus_name,
             Gio.BusNameOwnerFlags.NONE,
-            onBusAcquired,
-            onNameAcquired,
-            onNameLost,
+            (connection: Gio.DBusConnection) => object.export(connection, path),
+            null,
+            () => log.debug(`D-Bus name ${bus_name} is not available`),
         );
+
+        this.exports.push({ object, owner_id });
     }
 
     destroy() {
-        if (this.id) {
-            Gio.bus_unown_name(this.id);
-            this.id = null;
-        }
-        if (this.dbus) {
-            this.dbus.unexport();
-            this.dbus = null;
+        for (const { object, owner_id } of this.exports.splice(0)) {
+            Gio.bus_unown_name(owner_id);
+            object.unexport();
         }
     }
 }

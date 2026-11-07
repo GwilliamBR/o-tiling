@@ -109,6 +109,7 @@ const WINDOW_ANIMATION_DURATION = 'window-animation-duration';
 
 const THEME_CONSISTENCY_STYLE = 'theme-consistency-style';
 const SKIP_OVERVIEW = 'skip-overview';
+const FULLSCREEN_LAUNCHER = 'fullscreen-launcher';
 const SHOW_MINIMIZE_MAXIMIZE_BUTTONS = 'show-minimize-maximize-buttons';
 const SHOW_CLOSE_BUTTON = 'show-close-button';
 const PANEL_TRANSPARENCY = 'panel-transparency';
@@ -383,6 +384,10 @@ export class ExtensionSettings {
 
     skip_overview(): boolean {
         return this.ext.get_boolean(SKIP_OVERVIEW);
+    }
+
+    fullscreen_launcher(): boolean {
+        return this.ext.get_boolean(FULLSCREEN_LAUNCHER);
     }
 
     show_minimize_maximize_buttons(): boolean {

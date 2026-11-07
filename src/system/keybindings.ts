@@ -213,6 +213,7 @@ export class Keybindings {
 
         this.global = {
             'tile-enter': () => ext.tiler.enter(ext),
+            'activate-launcher': () => ext.launcher.open(ext),
         };
 
         this.window_focus = {

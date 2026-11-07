@@ -672,10 +672,18 @@ export default class OTilingPreferences extends ExtensionPreferences {
         });
         shortcutsPage.add(navGroup);
 
+        this._addShortcutRow(navGroup, settings, 'activate-launcher', _('Open Launcher'));
         this._addShortcutRow(navGroup, settings, 'focus-left', _('Focus Left'));
         this._addShortcutRow(navGroup, settings, 'focus-right', _('Focus Right'));
         this._addShortcutRow(navGroup, settings, 'focus-up', _('Focus Up'));
         this._addShortcutRow(navGroup, settings, 'focus-down', _('Focus Down'));
+
+        const fullscreenLauncher = new Adw.SwitchRow({
+            title: _('Launcher Over Fullscreen Windows'),
+            subtitle: _('Allow the launcher to open while a window is fullscreen'),
+        });
+        navGroup.add(fullscreenLauncher);
+        settings.bind('fullscreen-launcher', fullscreenLauncher as any, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         // Tiling Group
         const tilingGroupShortcuts = new Adw.PreferencesGroup({
