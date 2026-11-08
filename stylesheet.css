@@ -72,36 +72,89 @@
     border-color: rgba(0, 0, 0, 0.35);
 }
 
-/* ── Search dialog ───────────────────────────────────────── */
+/* ── Search dialog (Pop Shell Design) ───────────────────── */
 
-.o-tiling-search-element:select {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    color: #333;
+.o-tiling-search.modal-dialog {
+    background-color: #f6f6f6;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+    padding: 12px;
 }
 
-.o-tiling-search-icon {
-    margin-right: 10px;
+.o-tiling-entry {
+    background-color: #ffffff;
+    color: #393634;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 13pt;
+    margin-bottom: 8px;
+    caret-color: #FFAD00;
 }
 
-.o-tiling-search-cat {
-    margin-right: 10px;
+.o-tiling-entry:focus {
+    border-color: #FFAD00;
+}
+
+.o-tiling-entry StLabel.hint-text {
+    color: rgba(0, 0, 0, 0.45);
+    font-style: italic;
+}
+
+.o-tiling-search-list {
+    max-height: 420px;
+    spacing: 2px;
 }
 
 .o-tiling-search-element {
     padding-left: 10px;
-    padding-right: 2px;
+    padding-right: 6px;
     padding-top: 6px;
     padding-bottom: 6px;
+    border-radius: 5px;
+    color: #393634;
 }
 
-.o-tiling-search-list {
-    max-height: 480px;
+.o-tiling-search-element:hover,
+.o-tiling-search-element:select {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    color: #393634;
 }
 
-.o-tiling-entry {
-    padding: 6px 10px;
-    margin-bottom: 6px;
+.o-tiling-search-icon {
+    margin-right: 12px;
+}
+
+.o-tiling-search-cat {
+    margin-right: 12px;
+}
+
+.o-tiling-search-title {
+    font-size: 11pt;
+    font-weight: 500;
+}
+
+.o-tiling-search-desc {
+    font-size: 8.5pt;
+    color: rgba(57, 54, 52, 0.65);
+    margin-top: 2px;
+}
+
+.o-tiling-search-shortcut {
+    background-color: rgba(0, 0, 0, 0.08);
+    color: rgba(0, 0, 0, 0.6);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 8.5pt;
+    font-weight: bold;
+}
+
+.o-tiling-separator {
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.08);
+    margin: 2px 4px;
 }
 
 /* ── Tab bar (stacking) — frosted-glass redesign ─────────── */
@@ -346,9 +399,48 @@
         border-color: rgba(255, 255, 255, 0.35);
     }
 
-    .o-tiling-search-element:select {
-        background: rgba(246, 246, 246, .2);
+    .o-tiling-search.modal-dialog {
+        background-color: #2b2b2b;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    .o-tiling-entry {
+        background-color: #3b3b3b;
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        caret-color: #FBB86C;
+    }
+
+    .o-tiling-entry:focus {
+        border-color: #FBB86C;
+    }
+
+    .o-tiling-entry StLabel.hint-text {
+        color: rgba(255, 255, 255, 0.45);
+    }
+
+    .o-tiling-search-element {
         color: #EDEDED;
+    }
+
+    .o-tiling-search-element:hover,
+    .o-tiling-search-element:select {
+        background: rgba(246, 246, 246, 0.2);
+        color: #EDEDED;
+    }
+
+    .o-tiling-search-desc {
+        color: rgba(237, 237, 237, 0.65);
+    }
+
+    .o-tiling-search-shortcut {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: rgba(237, 237, 237, 0.7);
+    }
+
+    .o-tiling-separator {
+        background-color: rgba(255, 255, 255, 0.08);
     }
 
     /* ws-btn-active inherits --accent-color automatically — no override needed */

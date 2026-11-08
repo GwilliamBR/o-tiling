@@ -20,7 +20,6 @@ const CLIPBOARD = St.Clipboard.get_default();
 const CLIPBOARD_TYPE = St.ClipboardType.CLIPBOARD;
 
 const RIGHT_MOUSE_BUTTON = 3;
-const DIALOG_TOP_OFFSET = 72;
 const LAUNCHER_COMMAND = 'pop-launcher';
 
 interface ResultEntry {
@@ -44,8 +43,7 @@ export class Launcher extends search_dialog.SearchDialog {
         this.ext = ext;
 
         this.dialog.dialogLayout._dialog.x_align = Clutter.ActorAlign.CENTER;
-        this.dialog.dialogLayout._dialog.y_align = Clutter.ActorAlign.START;
-        this.dialog.dialogLayout._dialog.margin_top = DIALOG_TOP_OFFSET;
+        this.dialog.dialogLayout._dialog.y_align = Clutter.ActorAlign.CENTER;
 
         this.cancel = () => {
             ext.overlay.visible = false;

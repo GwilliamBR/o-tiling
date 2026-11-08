@@ -62,8 +62,25 @@ export class SearchDialog {
 
         this.text.connect('activate', () => this.activate_id(this.active_id));
         this.text.connect('text-changed', () => this.on_text_changed());
+
+        const handle_key = (event: Clutter.Event): boolean => {
+            return this.on_key_press(event);
+        };
+
+        this.dialog.connect('key-press-event', (_actor: Clutter.Actor, event: Clutter.Event) => {
+            if (event.get_key_symbol() === Clutter.KEY_Escape) {
+                this.dismiss();
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
+
+        this.entry.connect('key-press-event', (_actor: Clutter.Actor, event: Clutter.Event) => {
+            return handle_key(event);
+        });
+
         this.text.connect('key-press-event', (_actor: Clutter.Actor, event: Clutter.Event) => {
-            this.on_key_press(event);
+            return handle_key(event);
         });
 
         this.list = new St.BoxLayout({
@@ -250,8 +267,9 @@ export class SearchDialog {
         this.select_id((this.active_id + step + count) % count);
     }
 
-    private on_key_press(event: Clutter.Event) {
-        const key = Gdk.keyval_name(Gdk.keyval_to_upper(event.get_key_symbol())) ?? '';
+    private on_key_press(event: Clutter.Event): boolean {
+        const symbol = event.get_key_symbol();
+        const key = Gdk.keyval_name(Gdk.keyval_to_upper(symbol)) ?? '';
         const ctrl = Boolean(event.get_state() & Clutter.ModifierType.CONTROL_MASK);
 
         const is_down = key === 'Down' || (ctrl && (key === 'J' || key === 'N'));
@@ -260,49 +278,70 @@ export class SearchDialog {
         // Throttle held-down keys so the selection does not race past the user.
         if (event.get_flags() !== Clutter.EventFlags.NONE) {
             const now = global.get_current_time();
-            if (now - this.last_trigger < KEY_REPEAT_DELAY_MS) return;
+            if (now - this.last_trigger < KEY_REPEAT_DELAY_MS) return Clutter.EVENT_STOP;
             this.last_trigger = now;
 
             if (is_up) this.move_selection(-1);
             else if (is_down) this.move_selection(1);
-            else return;
+            else return Clutter.EVENT_PROPAGATE;
 
             this.select(this.active_id);
-            return;
+            return Clutter.EVENT_STOP;
         }
 
         this.last_trigger = global.get_current_time();
 
-        if (key === 'Escape') {
+        if (symbol === Clutter.KEY_Escape || key === 'Escape') {
             this.dismiss();
-            return;
+            return Clutter.EVENT_STOP;
         }
 
-        if (key === 'Tab') {
+        if (symbol === Clutter.KEY_Tab || key === 'Tab') {
             this.complete();
-            return;
+            return Clutter.EVENT_STOP;
+        }
+
+        if (
+            symbol === Clutter.KEY_Return ||
+            symbol === Clutter.KEY_KP_Enter ||
+            symbol === Clutter.KEY_ISO_Enter ||
+            key === 'Return'
+        ) {
+            this.activate_id(this.active_id);
+            return Clutter.EVENT_STOP;
         }
 
         if (is_up) {
             this.move_selection(-1);
-        } else if (is_down) {
-            this.move_selection(1);
-        } else if (ctrl && /^[1-9]$/.test(key)) {
-            this.activate_id(Number(key) - 1);
-            return;
-        } else if (ctrl && key === 'Q') {
-            this.quit(this.active_id);
-            return;
-        } else if (key === 'Copy' || (ctrl && (key === 'C' || key === 'Insert'))) {
-            // With text selected, behave as a normal copy.
-            if (this.text.get_selection()) return;
-
-            this.copy(this.active_id);
-            this.close();
-            this.cancel();
+            this.select(this.active_id);
+            return Clutter.EVENT_STOP;
         }
 
-        this.select(this.active_id);
+        if (is_down) {
+            this.move_selection(1);
+            this.select(this.active_id);
+            return Clutter.EVENT_STOP;
+        }
+
+        if (ctrl && /^[1-9]$/.test(key)) {
+            this.activate_id(Number(key) - 1);
+            return Clutter.EVENT_STOP;
+        }
+
+        if (ctrl && key === 'Q') {
+            this.quit(this.active_id);
+            return Clutter.EVENT_STOP;
+        }
+
+        if (key === 'Copy' || (ctrl && (key === 'C' || key === 'Insert'))) {
+            if (!this.text.get_selection()) {
+                this.copy(this.active_id);
+                this.dismiss();
+                return Clutter.EVENT_STOP;
+            }
+        }
+
+        return Clutter.EVENT_PROPAGATE;
     }
 }
 
@@ -312,7 +351,7 @@ export class SearchOption {
     shortcut = new St.Label({
         text: '',
         y_align: Clutter.ActorAlign.CENTER,
-        style: 'padding-left: 6px;padding-right: 6px',
+        style_class: 'o-tiling-search-shortcut',
     });
 
     constructor(
@@ -324,9 +363,9 @@ export class SearchOption {
     ) {
         const layout = new St.BoxLayout({ x_expand: true });
 
-        attach_icon(layout, category_icon, icon_size / 2);
+        attach_icon(layout, category_icon, icon_size / 2, true);
 
-        const label = new St.Label({ text: title });
+        const label = new St.Label({ text: title, style_class: 'o-tiling-search-title' });
         label.clutter_text.set_ellipsize(Pango.EllipsizeMode.END);
 
         attach_icon(layout, icon, icon_size);
@@ -339,7 +378,7 @@ export class SearchOption {
         info_box.add_child(label);
 
         if (description) {
-            info_box.add_child(new St.Label({ text: description, style: 'font-size: small' }));
+            info_box.add_child(new St.Label({ text: description, style_class: 'o-tiling-search-desc' }));
         }
 
         layout.add_child(info_box);
@@ -350,12 +389,15 @@ export class SearchOption {
     }
 }
 
-function attach_icon(layout: St.BoxLayout, icon: JsonIPC.IconSource | null, icon_size: number) {
+function attach_icon(layout: St.BoxLayout, icon: JsonIPC.IconSource | null, icon_size: number, is_cat = false) {
     if (!icon) return;
 
     const generated = generate_icon(icon, icon_size);
     if (!generated) return;
 
+    if (is_cat) {
+        generated.style_class = 'o-tiling-search-cat';
+    }
     generated.set_y_align(Clutter.ActorAlign.CENTER);
     layout.add_child(generated);
 }
