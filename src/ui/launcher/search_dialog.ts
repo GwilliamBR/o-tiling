@@ -1,5 +1,4 @@
 import * as Lib from '../../utils/lib.js';
-import * as rect from '../../utils/rectangle.js';
 
 import type * as JsonIPC from './protocol.js';
 
@@ -78,20 +77,17 @@ export class SearchDialog {
         this.dialog.contentLayout.add_child(this.entry);
         this.dialog.contentLayout.add_child(this.scroller);
 
-        this.dialog.contentLayout.width = Math.max(Lib.current_monitor().width / 4, MIN_DIALOG_WIDTH);
+        const monitor = Main.layoutManager.currentMonitor ?? Main.layoutManager.primaryMonitor;
+        const monitorWidth = monitor ? monitor.width : 1920;
+        this.set_dialog_width(monitorWidth);
 
         this.dialog.connect('event', (_actor: Clutter.Actor, event: Clutter.Event) => {
-            const { width, height } = this.dialog.dialogLayout._dialog;
-            const { x, y } = this.dialog.dialogLayout;
-            const area = new rect.Rectangle([x, y, width, height]);
-
-            const clicked_outside =
-                this.dialog.visible &&
-                event.type() === Clutter.EventType.BUTTON_PRESS &&
-                !area.contains(Lib.cursor_rect());
-
-            if (clicked_outside) this.dismiss();
-
+            if (this.dialog.visible && event.type() === Clutter.EventType.BUTTON_PRESS) {
+                const target = event.get_source();
+                if (target && !this.dialog.dialogLayout._dialog.contains(target)) {
+                    this.dismiss();
+                }
+            }
             return Clutter.EVENT_PROPAGATE;
         });
 
@@ -151,11 +147,16 @@ export class SearchDialog {
         this.dialog.destroy();
     }
 
-    protected open_dialog() {
-        this.dialog.open();
+    set_dialog_width(monitorWidth: number) {
+        this.dialog.contentLayout.width = Math.max(Math.round(monitorWidth / 3.5), MIN_DIALOG_WIDTH);
+    }
 
-        // Lets the Super key reach the Overview toggle, which closes this dialog.
-        wm.allowKeybinding('overlay-key', Shell.ActionMode.ALL);
+    protected open_dialog(): boolean {
+        const opened = this.dialog.open();
+        if (opened) {
+            wm.allowKeybinding('overlay-key', Shell.ActionMode.ALL);
+        }
+        return opened;
     }
 
     select_id(id: number) {

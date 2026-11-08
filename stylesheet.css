@@ -95,6 +95,15 @@
     padding-bottom: 6px;
 }
 
+.o-tiling-search-list {
+    max-height: 480px;
+}
+
+.o-tiling-entry {
+    padding: 6px 10px;
+    margin-bottom: 6px;
+}
+
 /* ── Tab bar (stacking) — frosted-glass redesign ─────────── */
 
 .o-tiling-stack {

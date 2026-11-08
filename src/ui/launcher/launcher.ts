@@ -20,8 +20,7 @@ const CLIPBOARD = St.Clipboard.get_default();
 const CLIPBOARD_TYPE = St.ClipboardType.CLIPBOARD;
 
 const RIGHT_MOUSE_BUTTON = 3;
-const DIALOG_TOP_OFFSET = 48;
-const TALL_WORK_AREA_HEIGHT = 900;
+const DIALOG_TOP_OFFSET = 72;
 const LAUNCHER_COMMAND = 'pop-launcher';
 
 interface ResultEntry {
@@ -44,9 +43,9 @@ export class Launcher extends search_dialog.SearchDialog {
 
         this.ext = ext;
 
+        this.dialog.dialogLayout._dialog.x_align = Clutter.ActorAlign.CENTER;
         this.dialog.dialogLayout._dialog.y_align = Clutter.ActorAlign.START;
-        this.dialog.dialogLayout._dialog.x_align = Clutter.ActorAlign.START;
-        this.dialog.dialogLayout.y = DIALOG_TOP_OFFSET;
+        this.dialog.dialogLayout._dialog.margin_top = DIALOG_TOP_OFFSET;
 
         this.cancel = () => {
             ext.overlay.visible = false;
@@ -100,28 +99,32 @@ export class Launcher extends search_dialog.SearchDialog {
         return this.dialog.is_visible();
     }
 
+    close() {
+        this.ext.overlay.visible = false;
+        super.close();
+    }
+
     open(ext: Ext) {
         ext.tiler.exit(ext);
 
-        if (this.opened) return;
+        if (this.is_open()) return;
 
         if (!ext.settings.fullscreen_launcher() && ext.focus_window()?.meta.is_fullscreen()) return;
 
-        this.opened = true;
+        const currentMonitor = Main.layoutManager.currentMonitor ?? Main.layoutManager.primaryMonitor;
+        if (currentMonitor) {
+            (this.dialog as any)._monitorConstraint.index = currentMonitor.index;
+            this.set_dialog_width(currentMonitor.width);
+        }
 
-        const monitor = ext.active_monitor();
-        const work_area = ext.monitor_work_area(monitor);
-        const monitor_width = (ext.monitor_area(monitor) ?? work_area).width;
-
-        this.open_dialog();
-
-        if (!this.dialog.visible) {
+        if (!this.open_dialog()) {
             this.clear();
             this.cancel();
             this.close();
             return;
         }
 
+        this.opened = true;
         this.cleanup();
 
         if (!this.start_service()) {
@@ -131,11 +134,6 @@ export class Launcher extends search_dialog.SearchDialog {
         }
 
         this.search('');
-
-        const layout = this.dialog.dialogLayout;
-        const anchor_height = work_area.height >= TALL_WORK_AREA_HEIGHT ? work_area.height / 2 : work_area.height / 3.5;
-        layout.x = monitor_width / 2 - layout.width / 2;
-        layout.y = anchor_height - layout.height / 2;
     }
 
     stop_service() {
