@@ -151,20 +151,28 @@ export class Launcher extends search_dialog.SearchDialog {
 
     sync_appearance() {
         const is_dark = this.ext.settings.is_dark();
+        const dialogBox = (this.dialog as any).dialogLayout?._dialog;
+
         if (is_dark) {
             this.dialog.remove_style_class_name('light');
             this.dialog.add_style_class_name('dark');
+            dialogBox?.remove_style_class_name('light');
+            dialogBox?.add_style_class_name('dark');
         } else {
             this.dialog.remove_style_class_name('dark');
             this.dialog.add_style_class_name('light');
+            dialogBox?.remove_style_class_name('dark');
+            dialogBox?.add_style_class_name('light');
         }
 
         const accent_name = this.ext.settings.get_system_accent_name();
         if (this.current_accent_class) {
             this.dialog.remove_style_class_name(this.current_accent_class);
+            dialogBox?.remove_style_class_name(this.current_accent_class);
         }
         this.current_accent_class = `accent-${accent_name}`;
         this.dialog.add_style_class_name(this.current_accent_class);
+        dialogBox?.add_style_class_name(this.current_accent_class);
     }
 
     stop_service() {

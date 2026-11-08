@@ -24,3 +24,25 @@ The launcher was stuck in light mode and pressing the Escape key did not close t
 
 **Prevention rule:**
 Never use CSS `@media` queries in GNOME Shell extension stylesheets. Always toggle classes dynamically on actors and listen to `org.gnome.desktop.interface` changes. In Clutter key handlers, place modal exit keys (like Escape) before any repeat-throttling logic.
+
+---
+
+## ModalDialog Style Class Targeting and StEntry Focus Outlines
+
+**Date:** 2026-11-08
+**Category:** Logic error
+
+**What happened:**
+The launcher did not update to light mode despite system settings, and the search input displayed two focus outlines with a stuck blue cursor.
+
+**Root cause:**
+1. In GNOME Shell's `ModalDialog`, the style classes passed in constructor parameters (such as `o-tiling-search modal-dialog`) are placed on `dialogLayout._dialog`, not on the root `ModalDialog` widget. Calling `add_style_class_name` solely on `this.dialog` left `dialogLayout._dialog` without `.light`, so light mode CSS rules never matched.
+2. In GNOME Shell themes, `StEntry:focus` has a default focus ring outline or box-shadow. Adding a custom `border-color` without specifying `outline: none` and `box-shadow: none` resulted in both borders rendering simultaneously.
+
+**How it was fixed:**
+1. Updated `sync_appearance` to add and remove theme and accent classes on both `this.dialog` and `dialogLayout._dialog`.
+2. Added `outline: none; box-shadow: none;` to `.o-tiling-entry` and `.o-tiling-entry:focus`, and softened dialog outer shadow to `0 2px 6px`.
+
+**Prevention rule:**
+When styling GNOME Shell `ModalDialog` instances dynamically, always apply style classes to `this.dialog.dialogLayout._dialog` alongside `this.dialog`. When customizing `StEntry` focus borders, explicitly reset `outline` and `box-shadow` to avoid stacking on the shell's default focus ring.
+
