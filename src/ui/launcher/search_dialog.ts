@@ -67,7 +67,10 @@ export class SearchDialog {
             this.on_key_press(event);
         });
 
-        this.list = new St.BoxLayout({ style_class: 'o-tiling-search-list', vertical: true });
+        this.list = new St.BoxLayout({
+            style_class: 'o-tiling-search-list',
+            orientation: Clutter.Orientation.VERTICAL,
+        });
 
         this.scroller = new St.ScrollView();
         this.scroller.add_child(this.list);
@@ -329,7 +332,7 @@ export class SearchOption {
 
         const info_box = new St.BoxLayout({
             y_align: Clutter.ActorAlign.CENTER,
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             x_expand: true,
         });
         info_box.add_child(label);
