@@ -12,3 +12,4 @@ tsconfig.tsbuildinfo
 o-tiling@oliwebd.github.com/
 .agents/
 venv/
+scratch/
