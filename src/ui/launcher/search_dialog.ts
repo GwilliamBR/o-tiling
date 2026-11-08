@@ -67,6 +67,16 @@ export class SearchDialog {
             return this.on_key_press(event);
         };
 
+        this.dialog.connect('captured-event', (_actor: Clutter.Actor, event: Clutter.Event) => {
+            if (event.type() === Clutter.EventType.KEY_PRESS) {
+                if (event.get_key_symbol() === Clutter.KEY_Escape) {
+                    this.dismiss();
+                    return Clutter.EVENT_STOP;
+                }
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
+
         this.dialog.connect('key-press-event', (_actor: Clutter.Actor, event: Clutter.Event) => {
             if (event.get_key_symbol() === Clutter.KEY_Escape) {
                 this.dismiss();
@@ -270,31 +280,28 @@ export class SearchDialog {
     private on_key_press(event: Clutter.Event): boolean {
         const symbol = event.get_key_symbol();
         const key = Gdk.keyval_name(Gdk.keyval_to_upper(symbol)) ?? '';
-        const ctrl = Boolean(event.get_state() & Clutter.ModifierType.CONTROL_MASK);
-
-        const is_down = key === 'Down' || (ctrl && (key === 'J' || key === 'N'));
-        const is_up = key === 'Up' || key === 'ISO_Left_Tab' || (ctrl && (key === 'K' || key === 'P'));
-
-        // Throttle held-down keys so the selection does not race past the user.
-        if (event.get_flags() !== Clutter.EventFlags.NONE) {
-            const now = global.get_current_time();
-            if (now - this.last_trigger < KEY_REPEAT_DELAY_MS) return Clutter.EVENT_STOP;
-            this.last_trigger = now;
-
-            if (is_up) this.move_selection(-1);
-            else if (is_down) this.move_selection(1);
-            else return Clutter.EVENT_PROPAGATE;
-
-            this.select(this.active_id);
-            return Clutter.EVENT_STOP;
-        }
-
-        this.last_trigger = global.get_current_time();
 
         if (symbol === Clutter.KEY_Escape || key === 'Escape') {
             this.dismiss();
             return Clutter.EVENT_STOP;
         }
+
+        const ctrl = Boolean(event.get_state() & Clutter.ModifierType.CONTROL_MASK);
+        const is_down = key === 'Down' || (ctrl && (key === 'J' || key === 'N'));
+        const is_up = key === 'Up' || key === 'ISO_Left_Tab' || (ctrl && (key === 'K' || key === 'P'));
+
+        if (is_up || is_down) {
+            const now = global.get_current_time();
+            if (now - this.last_trigger < KEY_REPEAT_DELAY_MS) {
+                return Clutter.EVENT_STOP;
+            }
+            this.last_trigger = now;
+            this.move_selection(is_up ? -1 : 1);
+            this.select(this.active_id);
+            return Clutter.EVENT_STOP;
+        }
+
+        this.last_trigger = global.get_current_time();
 
         if (symbol === Clutter.KEY_Tab || key === 'Tab') {
             this.complete();

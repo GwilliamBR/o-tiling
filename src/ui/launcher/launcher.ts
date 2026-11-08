@@ -36,6 +36,8 @@ export class Launcher extends search_dialog.SearchDialog {
     private append_id: number | null = null;
     private active_menu: PopupMenu.PopupMenu | null = null;
     private opened = false;
+    private current_accent_class = '';
+    private settings_signal_ids: number[] = [];
 
     constructor(ext: Ext) {
         super();
@@ -44,6 +46,17 @@ export class Launcher extends search_dialog.SearchDialog {
 
         this.dialog.dialogLayout._dialog.x_align = Clutter.ActorAlign.CENTER;
         this.dialog.dialogLayout._dialog.y_align = Clutter.ActorAlign.CENTER;
+
+        this.sync_appearance();
+
+        if (this.ext.settings.int) {
+            const int = this.ext.settings.int;
+            this.settings_signal_ids.push(
+                int.connect('changed::color-scheme', () => this.sync_appearance()),
+                int.connect('changed::gtk-theme', () => this.sync_appearance()),
+                int.connect('changed::accent-color', () => this.sync_appearance()),
+            );
+        }
 
         this.cancel = () => {
             ext.overlay.visible = false;
@@ -109,6 +122,8 @@ export class Launcher extends search_dialog.SearchDialog {
 
         if (!ext.settings.fullscreen_launcher() && ext.focus_window()?.meta.is_fullscreen()) return;
 
+        this.sync_appearance();
+
         const currentMonitor = Main.layoutManager.currentMonitor ?? Main.layoutManager.primaryMonitor;
         if (currentMonitor) {
             (this.dialog as any)._monitorConstraint.index = currentMonitor.index;
@@ -134,6 +149,24 @@ export class Launcher extends search_dialog.SearchDialog {
         this.search('');
     }
 
+    sync_appearance() {
+        const is_dark = this.ext.settings.is_dark();
+        if (is_dark) {
+            this.dialog.remove_style_class_name('light');
+            this.dialog.add_style_class_name('dark');
+        } else {
+            this.dialog.remove_style_class_name('dark');
+            this.dialog.add_style_class_name('light');
+        }
+
+        const accent_name = this.ext.settings.get_system_accent_name();
+        if (this.current_accent_class) {
+            this.dialog.remove_style_class_name(this.current_accent_class);
+        }
+        this.current_accent_class = `accent-${accent_name}`;
+        this.dialog.add_style_class_name(this.current_accent_class);
+    }
+
     stop_service() {
         if (this.service === null) return;
 
@@ -143,6 +176,12 @@ export class Launcher extends search_dialog.SearchDialog {
     }
 
     destroy() {
+        if (this.ext.settings.int) {
+            for (const id of this.settings_signal_ids) {
+                this.ext.settings.int.disconnect(id);
+            }
+        }
+        this.settings_signal_ids = [];
         this.stop_service();
         this.remove_pending_append();
         for (const { menu } of this.results_array) menu.destroy();

@@ -161,6 +161,20 @@ export class ExtensionSettings {
         return this.ext.get_uint(GAP_OUTER);
     }
 
+    get_system_accent_name(): string {
+        if (!this.int) return 'blue';
+
+        const keys = this.int.list_keys();
+        if (keys && keys.includes('accent-color')) {
+            try {
+                return this.int.get_string('accent-color') || 'blue';
+            } catch (e) {
+                return 'blue';
+            }
+        }
+        return 'blue';
+    }
+
     get_system_accent_color(): string {
         if (!this.int) return DEFAULT_RGBA_COLOR;
 
@@ -197,6 +211,19 @@ export class ExtensionSettings {
     }
 
     is_dark(): boolean {
+        if (this.int) {
+            try {
+                const keys = this.int.list_keys();
+                if (keys && keys.includes('color-scheme')) {
+                    const scheme = this.int.get_string('color-scheme');
+                    if (scheme === 'prefer-dark') return true;
+                    if (scheme === 'prefer-light') return false;
+                }
+            } catch {
+                // Ignore missing key on older GNOME versions
+            }
+        }
+
         const theme = this.theme().toLowerCase();
         return DARK.some((dark) => theme.includes(dark));
     }
