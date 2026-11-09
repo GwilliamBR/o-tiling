@@ -110,11 +110,11 @@
 .o-tiling-search-list {
     max-height: 420px;
     spacing: 2px;
-    margin-right: 12px;
+    padding-right: 12px;
 }
 
 .o-tiling-scroller StScrollBar {
-    min-width: 6px;
+    min-width: 3px;
     padding: 0;
     transition-duration: 150ms;
 }
@@ -122,27 +122,27 @@
 .o-tiling-scroller StScrollBar.scrollbar-expanded,
 .o-tiling-scroller StScrollBar.scrollbar-dragging,
 .o-tiling-scroller StScrollBar:hover {
-    min-width: 12px;
+    min-width: 6px;
 }
 
 .o-tiling-scroller StScrollBar StBin#trough {
     border-radius: 99px;
     background-color: transparent;
-    border: 2px solid transparent;
+    border: 1px solid transparent;
     transition-duration: 150ms;
 }
 
 .o-tiling-scroller StScrollBar.scrollbar-expanded StBin#trough,
 .o-tiling-scroller StScrollBar.scrollbar-dragging StBin#trough,
 .o-tiling-scroller StScrollBar:hover StBin#trough {
-    border: 4px solid transparent;
+    border: 2px solid transparent;
     background-color: rgba(255, 255, 255, 0.08);
 }
 
 .o-tiling-scroller StScrollBar > .vhandle {
     border-radius: 99px;
     background-color: #c0bfbc;
-    border: 2px solid transparent;
+    border: 1px solid transparent;
     transition-duration: 150ms;
 }
 
@@ -150,13 +150,13 @@
 .o-tiling-scroller StScrollBar:hover > .vhandle,
 .o-tiling-scroller StScrollBar > .vhandle:hover {
     background-color: #8e8e93;
-    border: 4px solid transparent;
+    border: 2px solid transparent;
 }
 
 .o-tiling-scroller StScrollBar.scrollbar-dragging > .vhandle,
 .o-tiling-scroller StScrollBar > .vhandle:active {
-    background-color: #5e5c64;
-    border: 4px solid transparent;
+    background-color: #868689;
+    border: 2px solid transparent;
 }
 
 .o-tiling-search-element {
@@ -274,7 +274,7 @@
 
 .o-tiling-search.light .o-tiling-scroller StScrollBar.scrollbar-dragging > .vhandle,
 .o-tiling-search.light .o-tiling-scroller StScrollBar > .vhandle:active {
-    background-color: #46454b;
+    background-color: #a4a4a6;
 }
 
 /* System Accent Colors */

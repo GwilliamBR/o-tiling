@@ -75,19 +75,20 @@ On GNOME 42+, treat `color-scheme` as the authoritative source of truth (`'prefe
 **Category:** Logic error
 
 **What happened:**
-The overlay scrollbar in the launcher was twice as wide as native GNOME scrollbars (`4px` / `8px` instead of `2px` / `4px`), had fixed right-edge spacing, and overlapped the right side of the search result items.
+The overlay scrollbar in the launcher overlapped the right side of the search result items, was wider than native GNOME scrollbars, and had a dragged color darker than upstream GNOME.
 
 **Root cause:**
-1. `StScrollBar` was given `min-width: 14px` with `5px` / `3px` transparent borders on `.vhandle`, producing `4px` and `8px` visible thumb widths with mismatched right-edge spacing (`5px` / `3px`) instead of matching the bar width (`2px` / `4px`).
-2. Because `.o-tiling-search.modal-dialog` had `padding: 12px` on all sides, `StScrollView` ended `12px` inside the right border, placing the overlay scrollbar directly on top of `.o-tiling-search-element` rows.
+1. `StScrollView` ignores CSS `margin-right` on its child `StBoxLayout` because it forces its scroll child to allocate to the full viewport width. Therefore, `margin-right: 12px` on the list did not inset the search elements, causing them to extend under the overlay scrollbar.
+2. The scrollbar widths needed to be cut in half to match native GNOME: 1px thumb with 1px right spacing in half-width state, and 2px thumb with 2px right spacing in full-width state.
+3. The dragged state gray was too dark (#5e5c64 / #46454b) compared to upstream GNOME Shell (#868689 / #a4a4a6).
 
 **How it was fixed:**
-1. Set `StScrollBar` to `min-width: 6px` with `border: 2px solid transparent` on `.vhandle` in the half-width state (`2px` thumb, `2px` right spacing) and `min-width: 12px` with `border: 4px solid transparent` in the expanded/dragged state (`4px` thumb, `4px` right spacing).
-2. Set `.o-tiling-search.modal-dialog` padding to `12px 0 12px 12px` and added `margin-right: 12px` to `.o-tiling-entry` and `.o-tiling-search-list` so the scrollbar sits in the `12px` right gutter without overlapping list items.
-3. Applied explicit light gray, mid gray, and dark gray color states for half-width, hovered, and dragged states (`scrollbar-dragging`).
+1. Added `padding-right: 12px` to `.o-tiling-search-list` so `StBoxLayout` insets each result row by 12px, providing a clear 6px gutter before the 6px max scrollbar.
+2. Cut scrollbar widths in half: set `StScrollBar` `min-width: 3px` with `border: 1px solid transparent` on `.vhandle` and `trough` for half-width (1px thumb, 1px right spacing); `min-width: 6px` with `border: 2px solid transparent` for full-width (2px thumb, 2px right spacing).
+3. Updated dragged color to `#868689` in dark mode and `#a4a4a6` in light mode (matching upstream GNOME Shell).
 
 **Prevention rule:**
-For GNOME-style overlay scrollbars in `StScrollView`, place the scrollbar inside a dedicated right-hand gutter (`margin-right` on list content, `padding-right: 0` on container) so it never overlaps interactive rows, and set `StScrollBar` `min-width: 3 * W` with `.vhandle` `border: W solid transparent` so both the visible thumb width and right-edge spacing equal `W` (`2px` half-width, `4px` full-width).
+For GNOME-style overlay scrollbars in `StScrollView`, never rely on `margin-right` on the scroll child because `StScrollView` ignores it. Always use `padding-right` on the container `StBoxLayout` to inset list rows away from the scrollbar. For proportional spacing matching thumb width `W`, use `min-width: 3 * W` with `border: W solid transparent` on the handle.
 
 
 
