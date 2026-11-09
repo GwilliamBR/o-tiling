@@ -111,9 +111,45 @@
     spacing: 2px;
 }
 
+.o-tiling-scroller StScrollBar {
+    min-width: 14px;
+    padding: 0;
+}
+
+.o-tiling-scroller StScrollBar StBin#trough {
+    border-radius: 8px;
+    background-color: transparent;
+    margin: 2px;
+    transition-duration: 150ms;
+}
+
+.o-tiling-scroller StScrollBar.scrollbar-expanded StBin#trough,
+.o-tiling-scroller StScrollBar:hover StBin#trough {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.o-tiling-scroller StScrollBar > .vhandle {
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.45);
+    border: 5px solid transparent;
+    transition-duration: 150ms;
+}
+
+.o-tiling-scroller StScrollBar.scrollbar-expanded > .vhandle,
+.o-tiling-scroller StScrollBar:hover > .vhandle,
+.o-tiling-scroller StScrollBar > .vhandle:hover {
+    background-color: rgba(255, 255, 255, 0.65);
+    border: 3px solid transparent;
+}
+
+.o-tiling-scroller StScrollBar > .vhandle:active {
+    background-color: rgba(255, 255, 255, 0.85);
+    border: 3px solid transparent;
+}
+
 .o-tiling-search-element {
     padding-left: 10px;
-    padding-right: 6px;
+    padding-right: 14px;
     padding-top: 6px;
     padding-bottom: 6px;
     border-radius: 8px;
@@ -206,6 +242,25 @@
 
 .o-tiling-search.light .o-tiling-separator {
     background-color: rgba(0, 0, 0, 0.08);
+}
+
+.o-tiling-search.light .o-tiling-scroller StScrollBar.scrollbar-expanded StBin#trough,
+.o-tiling-search.light .o-tiling-scroller StScrollBar:hover StBin#trough {
+    background-color: rgba(0, 0, 0, 0.07);
+}
+
+.o-tiling-search.light .o-tiling-scroller StScrollBar > .vhandle {
+    background-color: rgba(0, 0, 0, 0.35);
+}
+
+.o-tiling-search.light .o-tiling-scroller StScrollBar.scrollbar-expanded > .vhandle,
+.o-tiling-search.light .o-tiling-scroller StScrollBar:hover > .vhandle,
+.o-tiling-search.light .o-tiling-scroller StScrollBar > .vhandle:hover {
+    background-color: rgba(0, 0, 0, 0.55);
+}
+
+.o-tiling-search.light .o-tiling-scroller StScrollBar > .vhandle:active {
+    background-color: rgba(0, 0, 0, 0.72);
 }
 
 /* System Accent Colors */

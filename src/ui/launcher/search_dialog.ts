@@ -19,6 +19,9 @@ const ICON_SIZE = 34;
 const MIN_DIALOG_WIDTH = 640;
 const KEY_REPEAT_DELAY_MS = 100;
 const MAX_SHORTCUT_OPTIONS = 9;
+const SCROLLBAR_FADE_IN_MS = 150;
+const SCROLLBAR_FADE_OUT_MS = 250;
+const SCROLLBAR_HIDE_DELAY_MS = 1000;
 
 /** Search box and result list shown by the launcher. Behavior is supplied through the callback fields. */
 export class SearchDialog {
@@ -37,6 +40,9 @@ export class SearchDialog {
     private text: Clutter.Text;
     private widgets: Array<St.Widget> = [];
     private scroller: St.ScrollView;
+    private vscroll: St.ScrollBar | null = null;
+    private scrollbar_dragging = false;
+    private scrollbar_hide_id: number | null = null;
     private children_to_abandon: Array<Clutter.Actor> | null = null;
     private last_trigger = 0;
     private text_changed_id: number | null = null;
@@ -98,8 +104,12 @@ export class SearchDialog {
             orientation: Clutter.Orientation.VERTICAL,
         });
 
-        this.scroller = new St.ScrollView();
+        this.scroller = new St.ScrollView({
+            style_class: 'o-tiling-scroller',
+            overlay_scrollbars: true,
+        });
         this.scroller.add_child(this.list);
+        this.setup_scrollbar();
 
         this.dialog.contentLayout.add_child(this.entry);
         this.dialog.contentLayout.add_child(this.scroller);
@@ -119,6 +129,96 @@ export class SearchDialog {
         });
 
         this.dialog.connect('closed', () => this.cancel());
+    }
+
+    private setup_scrollbar() {
+        const vscroll = this.scroller
+            .get_children()
+            .find((c) => c instanceof St.ScrollBar && c.get_orientation() === Clutter.Orientation.VERTICAL) as
+            | St.ScrollBar
+            | undefined;
+        if (!vscroll) return;
+
+        this.vscroll = vscroll;
+        vscroll.track_hover = true;
+        vscroll.reactive = true;
+        vscroll.opacity = 0;
+
+        const vhandle = vscroll
+            .get_children()
+            .find((c) => (c as St.Widget).has_style_class_name?.('vhandle')) as St.Button | undefined;
+        if (vhandle) {
+            vhandle.track_hover = true;
+            vhandle.reactive = true;
+        }
+
+        const sync_scrollbar_state = () => {
+            const expanded = Boolean(vscroll.hover || vhandle?.hover || this.scrollbar_dragging);
+            if (expanded) {
+                vscroll.add_style_class_name('scrollbar-expanded');
+                this.show_scrollbar();
+                this.clear_scrollbar_hide_timer();
+            } else {
+                vscroll.remove_style_class_name('scrollbar-expanded');
+                this.schedule_hide_scrollbar();
+            }
+        };
+
+        vscroll.connect('notify::hover', sync_scrollbar_state);
+        vhandle?.connect('notify::hover', sync_scrollbar_state);
+
+        vscroll.connect('scroll-start', () => {
+            this.scrollbar_dragging = true;
+            sync_scrollbar_state();
+        });
+
+        vscroll.connect('scroll-stop', () => {
+            this.scrollbar_dragging = false;
+            sync_scrollbar_state();
+        });
+
+        const vadjustment = this.scroller.get_vadjustment();
+        vadjustment.connect('notify::value', () => {
+            if (vadjustment.upper <= vadjustment.page_size) return;
+            this.show_scrollbar();
+            if (!vscroll.hover && !vhandle?.hover && !this.scrollbar_dragging) {
+                this.schedule_hide_scrollbar();
+            }
+        });
+    }
+
+    private show_scrollbar() {
+        if (!this.vscroll) return;
+        const vadj = this.scroller.get_vadjustment();
+        if (vadj.upper <= vadj.page_size) return;
+
+        (this.vscroll as any).ease({
+            opacity: 255,
+            duration: SCROLLBAR_FADE_IN_MS,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+        });
+    }
+
+    private clear_scrollbar_hide_timer() {
+        if (this.scrollbar_hide_id !== null) {
+            GLib.source_remove(this.scrollbar_hide_id);
+            this.scrollbar_hide_id = null;
+        }
+    }
+
+    private schedule_hide_scrollbar() {
+        this.clear_scrollbar_hide_timer();
+        this.scrollbar_hide_id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, SCROLLBAR_HIDE_DELAY_MS, () => {
+            this.scrollbar_hide_id = null;
+            if (this.vscroll && !this.scrollbar_dragging && !this.vscroll.hover) {
+                (this.vscroll as any).ease({
+                    opacity: 0,
+                    duration: SCROLLBAR_FADE_OUT_MS,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                });
+            }
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     get_text(): string {
@@ -148,6 +248,11 @@ export class SearchDialog {
     }
 
     clear() {
+        this.clear_scrollbar_hide_timer();
+        if (this.vscroll) {
+            (this.vscroll as any).remove_all_transitions?.();
+            this.vscroll.opacity = 0;
+        }
         this.cleanup();
         this.children_to_abandon = this.list.get_children();
         this.widgets = [];
@@ -167,6 +272,7 @@ export class SearchDialog {
     }
 
     destroy() {
+        this.clear_scrollbar_hide_timer();
         if (this.text_changed_id !== null) GLib.source_remove(this.text_changed_id);
         this.text_changed_id = null;
 
