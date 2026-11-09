@@ -215,8 +215,8 @@ export class Launcher extends search_dialog.SearchDialog {
         } else if ('Fill' in response) {
             this.set_text(response.Fill);
         } else if ('DesktopEntry' in response) {
-            this.launch_desktop_entry(response.DesktopEntry);
             this.close();
+            this.launch_desktop_entry(response.DesktopEntry);
         } else if ('Context' in response) {
             this.show_context_menu(response.Context.id, response.Context.options);
         } else {

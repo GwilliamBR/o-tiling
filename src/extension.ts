@@ -480,12 +480,13 @@ export class Ext extends Ecs.System<ExtEvent> {
             if (!this._ext_soft_disabled) this.launcher.open(this);
         };
         this.dbus.WindowFocus = (window: [number, number]) => {
+            this.launcher.close();
             const target_window = this.windows.get(window);
             if (target_window) {
-                target_window.activate();
+                this.workspace_active.set(target_window.workspace_id(), target_window.entity);
+                target_window.activate(true, true);
                 this.on_focused(target_window);
             }
-            this.launcher.close();
         };
 
         this.dbus.WindowHighlight = (window: [number, number]) => {

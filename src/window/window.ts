@@ -228,8 +228,8 @@ export class ShellWindow {
         if ((this.meta.get_compositor_private() as any)?.get_stage()) this.on_style_changed();
     }
 
-    activate(move_mouse: boolean = true): void {
-        activate(this.ext, move_mouse, this.meta);
+    activate(move_mouse: boolean = true, switch_workspace: boolean = false): void {
+        activate(this.ext, move_mouse, this.meta, switch_workspace);
     }
 
     actor_exists(): boolean {
@@ -947,7 +947,7 @@ export class ShellWindow {
 }
 
 /// Activates a window, and moves the mouse point.
-export function activate(ext: Ext, move_mouse: boolean, win: Meta.Window) {
+export function activate(ext: Ext, move_mouse: boolean, win: Meta.Window, switch_workspace: boolean = false) {
     try {
         if (!(win.get_compositor_private() as any)) return;
 
@@ -964,13 +964,14 @@ export function activate(ext: Ext, move_mouse: boolean, win: Meta.Window) {
 
         if (!(ext as any)._batch_moving) {
             const active_index = (global as any).workspace_manager.get_active_workspace_index();
-            if (workspace.index() !== active_index) {
+            if (!switch_workspace && workspace.index() !== active_index) {
                 log.debug(
                     `activate: skipping activate_with_focus for ${win.get_wm_class()} — ` +
                     `its workspace ${workspace.index()} != active ${active_index}`,
                 );
             } else {
-                workspace.activate_with_focus(win, Clutter.get_current_event_time());
+                const time = Clutter.get_current_event_time() || global.get_current_time();
+                workspace.activate_with_focus(win, time);
             }
         }
         win.raise();

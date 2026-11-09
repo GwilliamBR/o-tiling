@@ -46,3 +46,25 @@ The launcher did not update to light mode despite system settings, and the searc
 **Prevention rule:**
 When styling GNOME Shell `ModalDialog` instances dynamically, always apply style classes to `this.dialog.dialogLayout._dialog` alongside `this.dialog`. When customizing `StEntry` focus borders, explicitly reset `outline` and `box-shadow` to avoid stacking on the shell's default focus ring.
 
+---
+
+## Color Scheme Fallback to GTK Theme and Cross-Workspace Window Activation
+
+**Date:** 2026-11-08
+**Category:** Logic error
+
+**What happened:**
+The launcher stayed in dark mode when the system was switched to light mode, and selecting a window from a different workspace in the launcher did not switch to that workspace.
+
+**Root cause:**
+1. On GNOME 42+, switching to Light mode sets `org.gnome.desktop.interface color-scheme` to `'default'`, while `gtk-theme` on CachyOS remained `'adw-gtk3-dark'`. In `is_dark()`, only `'prefer-light'` returned `false`, so `'default'` fell through to checking `gtk-theme`, matched `'dark'`, and returned `true`.
+2. In `src/window/window.ts`, `activate()` had a guard skipping `workspace.activate_with_focus` whenever `workspace.index() !== active_index`. When `dbus.WindowFocus` called `target_window.activate()`, that guard blocked workspace switching.
+
+**How it was fixed:**
+1. Returned `scheme === 'prefer-dark'` directly in `is_dark()` whenever the `color-scheme` key exists.
+2. Added `switch_workspace` parameter to `activate()`, passed `true` from `dbus.WindowFocus`, closed the launcher before activation, and fell back to `global.get_current_time()` when `Clutter.get_current_event_time()` is 0.
+
+**Prevention rule:**
+On GNOME 42+, treat `color-scheme` as the authoritative source of truth (`'prefer-dark'` = dark, `'default'` / `'prefer-light'` = light) without falling back to `gtk-theme`. When explicitly focusing a window from user navigation or launcher selection, bypass background workspace-switch guards and ensure a valid timestamp is passed to `activate_with_focus`.
+
+

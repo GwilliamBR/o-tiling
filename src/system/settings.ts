@@ -216,8 +216,7 @@ export class ExtensionSettings {
                 const keys = this.int.list_keys();
                 if (keys && keys.includes('color-scheme')) {
                     const scheme = this.int.get_string('color-scheme');
-                    if (scheme === 'prefer-dark') return true;
-                    if (scheme === 'prefer-light') return false;
+                    return scheme === 'prefer-dark';
                 }
             } catch {
                 // Ignore missing key on older GNOME versions
