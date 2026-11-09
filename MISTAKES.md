@@ -67,4 +67,27 @@ The launcher stayed in dark mode when the system was switched to light mode, and
 **Prevention rule:**
 On GNOME 42+, treat `color-scheme` as the authoritative source of truth (`'prefer-dark'` = dark, `'default'` / `'prefer-light'` = light) without falling back to `gtk-theme`. When explicitly focusing a window from user navigation or launcher selection, bypass background workspace-switch guards and ensure a valid timestamp is passed to `activate_with_focus`.
 
+---
+
+## Overlay Scrollbar Dimensions, Proportional Right Spacing, and Gutter Overlap
+
+**Date:** 2026-11-09
+**Category:** Logic error
+
+**What happened:**
+The overlay scrollbar in the launcher was twice as wide as native GNOME scrollbars (`4px` / `8px` instead of `2px` / `4px`), had fixed right-edge spacing, and overlapped the right side of the search result items.
+
+**Root cause:**
+1. `StScrollBar` was given `min-width: 14px` with `5px` / `3px` transparent borders on `.vhandle`, producing `4px` and `8px` visible thumb widths with mismatched right-edge spacing (`5px` / `3px`) instead of matching the bar width (`2px` / `4px`).
+2. Because `.o-tiling-search.modal-dialog` had `padding: 12px` on all sides, `StScrollView` ended `12px` inside the right border, placing the overlay scrollbar directly on top of `.o-tiling-search-element` rows.
+
+**How it was fixed:**
+1. Set `StScrollBar` to `min-width: 6px` with `border: 2px solid transparent` on `.vhandle` in the half-width state (`2px` thumb, `2px` right spacing) and `min-width: 12px` with `border: 4px solid transparent` in the expanded/dragged state (`4px` thumb, `4px` right spacing).
+2. Set `.o-tiling-search.modal-dialog` padding to `12px 0 12px 12px` and added `margin-right: 12px` to `.o-tiling-entry` and `.o-tiling-search-list` so the scrollbar sits in the `12px` right gutter without overlapping list items.
+3. Applied explicit light gray, mid gray, and dark gray color states for half-width, hovered, and dragged states (`scrollbar-dragging`).
+
+**Prevention rule:**
+For GNOME-style overlay scrollbars in `StScrollView`, place the scrollbar inside a dedicated right-hand gutter (`margin-right` on list content, `padding-right: 0` on container) so it never overlaps interactive rows, and set `StScrollBar` `min-width: 3 * W` with `.vhandle` `border: W solid transparent` so both the visible thumb width and right-edge spacing equal `W` (`2px` half-width, `4px` full-width).
+
+
 

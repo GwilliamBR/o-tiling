@@ -153,6 +153,12 @@ export class SearchDialog {
         }
 
         const sync_scrollbar_state = () => {
+            if (this.scrollbar_dragging) {
+                vscroll.add_style_class_name('scrollbar-dragging');
+            } else {
+                vscroll.remove_style_class_name('scrollbar-dragging');
+            }
+
             const expanded = Boolean(vscroll.hover || vhandle?.hover || this.scrollbar_dragging);
             if (expanded) {
                 vscroll.add_style_class_name('scrollbar-expanded');
@@ -210,7 +216,12 @@ export class SearchDialog {
         this.clear_scrollbar_hide_timer();
         this.scrollbar_hide_id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, SCROLLBAR_HIDE_DELAY_MS, () => {
             this.scrollbar_hide_id = null;
-            if (this.vscroll && !this.scrollbar_dragging && !this.vscroll.hover) {
+            if (
+                this.vscroll &&
+                !this.scrollbar_dragging &&
+                !this.vscroll.hover &&
+                !this.vscroll.has_style_class_name('scrollbar-expanded')
+            ) {
                 (this.vscroll as any).ease({
                     opacity: 0,
                     duration: SCROLLBAR_FADE_OUT_MS,
