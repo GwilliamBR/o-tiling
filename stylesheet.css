@@ -155,7 +155,7 @@
 
 .o-tiling-scroller StScrollBar.scrollbar-dragging > .vhandle,
 .o-tiling-scroller StScrollBar > .vhandle:active {
-    background-color: #868689;
+    background-color: #5e5c64;
     border: 2px solid transparent;
 }
 
@@ -274,7 +274,7 @@
 
 .o-tiling-search.light .o-tiling-scroller StScrollBar.scrollbar-dragging > .vhandle,
 .o-tiling-search.light .o-tiling-scroller StScrollBar > .vhandle:active {
-    background-color: #a4a4a6;
+    background-color: #46454b;
 }
 
 /* System Accent Colors */

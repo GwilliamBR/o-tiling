@@ -85,7 +85,7 @@ The overlay scrollbar in the launcher overlapped the right side of the search re
 **How it was fixed:**
 1. Added `padding-right: 12px` to `.o-tiling-search-list` so `StBoxLayout` insets each result row by 12px, providing a clear 6px gutter before the 6px max scrollbar.
 2. Cut scrollbar widths in half: set `StScrollBar` `min-width: 3px` with `border: 1px solid transparent` on `.vhandle` and `trough` for half-width (1px thumb, 1px right spacing); `min-width: 6px` with `border: 2px solid transparent` for full-width (2px thumb, 2px right spacing).
-3. Updated dragged color to `#868689` in dark mode and `#a4a4a6` in light mode (matching upstream GNOME Shell).
+3. Used user-preferred deeper dark gray for dragged state: `#5e5c64` in dark mode and `#46454b` in light mode.
 
 **Prevention rule:**
 For GNOME-style overlay scrollbars in `StScrollView`, never rely on `margin-right` on the scroll child because `StScrollView` ignores it. Always use `padding-right` on the container `StBoxLayout` to inset list rows away from the scrollbar. For proportional spacing matching thumb width `W`, use `min-width: 3 * W` with `border: W solid transparent` on the handle.
