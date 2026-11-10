@@ -278,7 +278,7 @@ jobs:
 
           > **⚡ Quick Install (One Command):**
           > \`\`\`bash
-          > curl -L https://github.com/oliwebd/o-tiling/releases/download/v${VERSION}/${UUID}-v${VERSION}.zip \\
+          > curl -L https://github.com/${{ github.repository }}/releases/download/v${VERSION}/${UUID}-v${VERSION}.zip \\
           >   -o /tmp/o-tiling.zip \\
           >   && gnome-extensions install --force /tmp/o-tiling.zip \\
           >   && gnome-extensions enable ${UUID}
@@ -320,7 +320,8 @@ jobs:
     if: |
       startsWith(github.ref, 'refs/tags/v') &&
       !contains(github.ref, '-rc') &&
-      !contains(github.ref, '-beta')
+      !contains(github.ref, '-beta') &&
+      github.repository == 'oliwebd/o-tiling'
 
     steps:
       - name: Download build artifact
