@@ -1,6 +1,6 @@
 <p align="left">
-  <a href="https://github.com/oliwebd/o-tiling/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/oliwebd/o-tiling?style=flat-square&color=4A90D9&label=release&logo=github&logoColor=white"></a>
-  <a href="https://github.com/oliwebd/o-tiling/actions/workflows/release.yml"><img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/oliwebd/o-tiling/release.yml?style=flat-square&label=build&logo=githubactions&logoColor=white"></a>
+  <a href="https://github.com/GwilliamBR/o-tiling/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/oliwebd/o-tiling?style=flat-square&color=4A90D9&label=release&logo=github&logoColor=white"></a>
+  <a href="https://github.com/GwilliamBR/o-tiling/actions/workflows/release.yml"><img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/oliwebd/o-tiling/release.yml?style=flat-square&label=build&logo=githubactions&logoColor=white"></a>
   <a href="https://www.typescriptlang.org/"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-6.0-3178C6?style=flat-square&logo=typescript&logoColor=white"></a>
   <a href="https://extensions.gnome.org/extension/9875/o-tiling/"><img alt="GNOME Extensions" src="https://img.shields.io/badge/EGO-%239875-4A90D9?style=flat-square&logo=gnome&logoColor=white"></a>
   <a href="https://extensions.gnome.org/extension/9875/o-tiling/"><img alt="GNOME Shell" src="https://img.shields.io/badge/GNOME%20Shell-48%20%7C%2049%20%7C%2050-4A90D9?style=flat-square&logo=gnome&logoColor=white"></a>
@@ -24,7 +24,7 @@ O-Tiling is a fork of [System76 Pop Shell](https://github.com/pop-os/shell), wit
 Open a terminal and run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/GwilliamBR/o-tiling/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/GwilliamBR/o-tiling/main/scripts/install.sh | bash
 ```
 
 The script automatically checks for `pop-launcher`, prompts to install it if missing, and installs the extension.
@@ -35,9 +35,10 @@ Then log out and log back in to activate the extension (required on Wayland).
 
 ## Manual Install
 
-1. Download the latest zip from the [Releases page](https://github.com/oliwebd/o-tiling/releases/latest)
+1. Download the latest zip from the [Releases page](https://github.com/GwilliamBR/o-tiling/releases/latest)
 
 2. Install it:
+
    ```bash
    gnome-extensions install --force ~/Downloads/o-tiling@oliwebd.github.com-v2.9.20.zip
    ```
@@ -200,7 +201,7 @@ Everything below is inherited from Pop Shell and improved:
 
 ## Launcher
 
-O-Tiling includes a keyboard-driven search and command launcher powered by `pop-launcher`.
+O-Tiling includes a keyboard-driven search and command launcher powered by [pop-launcher](https://github.com/pop-os/launcher).
 
 Press `Super + /` to open the launcher at the center of the active screen. Press `Escape` to dismiss it.
 
@@ -220,18 +221,18 @@ The launcher relies on `pop-launcher`. If it is not present on your system, pres
 
 ## Default Keyboard Shortcuts
 
-| Action | Shortcut |
-|---|---|
-| Open launcher | `Super + /` |
+| Action                                | Shortcut                                          |
+| ------------------------------------- | ------------------------------------------------- |
+| Open launcher                         | `Super + /`                                       |
 | Focus window left / right / up / down | `Super + Alt + Arrows` or `Super + H / J / K / L` |
-| Toggle auto-tiling on or off | `Super + T` |
-| Toggle floating (free) window | `Super + F` |
-| Enter adjustment mode | `Super + Enter` |
-| Toggle stacking mode | `Super + S` |
-| Move window to upper workspace | `Super + Shift + Up` |
-| Move window to lower workspace | `Super + Shift + Down` |
-| Move window to left monitor | `Super + Shift + Ctrl + Left` |
-| Move window to right monitor | `Super + Shift + Ctrl + Right` |
+| Toggle auto-tiling on or off          | `Super + T`                                       |
+| Toggle floating (free) window         | `Super + F`                                       |
+| Enter adjustment mode                 | `Super + Enter`                                   |
+| Toggle stacking mode                  | `Super + S`                                       |
+| Move window to upper workspace        | `Super + Shift + Up`                              |
+| Move window to lower workspace        | `Super + Shift + Down`                            |
+| Move window to left monitor           | `Super + Shift + Ctrl + Left`                     |
+| Move window to right monitor          | `Super + Shift + Ctrl + Right`                    |
 
 All shortcuts can be changed in the Shortcuts tab inside the extension preferences.
 
@@ -321,10 +322,12 @@ make install
 Releases are automatically built and published via GitHub Actions when a version tag is pushed.
 
 ### Branch Rules
+
 - Production releases must be tagged from the `main` or `master` branch.
 - Pre-releases (RC / Beta) must be tagged from the `rc` branch.
 
 ### How to Release
+
 1. Make sure the version in `package.json` and `metadata.json` matches and is updated.
 2. Commit and push your changes to the appropriate branch (`main`/`master` for production, `rc` for RC/Beta).
 3. Create and push a version tag:

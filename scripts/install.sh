@@ -5,6 +5,15 @@ UUID="o-tiling@oliwebd.github.com"
 REPO="${O_TILING_REPO:-GwilliamBR/o-tiling}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Resolve repository root whether script is in root or in scripts/
+if [ -f "$SCRIPT_DIR/metadata.json" ] && [ -f "$SCRIPT_DIR/package.json" ]; then
+    REPO_ROOT="$SCRIPT_DIR"
+elif [ -f "$SCRIPT_DIR/../metadata.json" ] && [ -f "$SCRIPT_DIR/../package.json" ]; then
+    REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+else
+    REPO_ROOT=""
+fi
+
 # Ensure not running as root
 if [ "$(id -u)" -eq 0 ]; then
     echo "Error: Do not run this script as root or with sudo."
@@ -117,16 +126,16 @@ check_pop_launcher() {
 }
 
 install_extension() {
-    # Check if inside repository root
-    if [ -f "$SCRIPT_DIR/metadata.json" ] && [ -f "$SCRIPT_DIR/package.json" ]; then
-        echo "Installing from local source..."
+    # Check if running within a cloned repository
+    if [ -n "$REPO_ROOT" ]; then
+        echo "Installing from local source at $REPO_ROOT..."
         if command -v make >/dev/null 2>&1 && command -v pnpm >/dev/null 2>&1; then
-            (cd "$SCRIPT_DIR" && make install)
-        elif [ -f "$SCRIPT_DIR/$UUID.zip" ]; then
-            gnome-extensions install --force "$SCRIPT_DIR/$UUID.zip"
+            (cd "$REPO_ROOT" && make install)
+        elif [ -f "$REPO_ROOT/$UUID.zip" ]; then
+            gnome-extensions install --force "$REPO_ROOT/$UUID.zip"
         else
             echo "Building extension requires make and pnpm."
-            (cd "$SCRIPT_DIR" && pnpm install && pnpm run build && make install)
+            (cd "$REPO_ROOT" && pnpm install && pnpm run build && make install)
         fi
     else
         echo "Downloading latest release package..."
