@@ -196,10 +196,31 @@ Everything below is inherited from Pop Shell and improved:
 
 ---
 
+## Launcher
+
+O-Tiling includes a keyboard-driven search and command launcher powered by `pop-launcher`.
+
+Press `Super + /` to open the launcher at the center of the active screen. Press `Escape` to dismiss it.
+
+### Key Capabilities
+
+- Application Launching: Quickly search and launch desktop applications.
+- Window Switching: Search open windows and switch focus directly to them, even if they reside on a different workspace.
+- Calculations and Commands: Perform instant math calculations, open recent files, or run terminal commands.
+- Plugin Modes: Type `?` in the search bar to inspect all available plugin triggers (such as calculator, files, and commands).
+- GNOME System Integration: Follows the GNOME desktop color scheme (dark and light modes) and matches your chosen system accent color.
+
+### System Requirement
+
+The launcher relies on `pop-launcher`. If it is not present on your system, pressing the shortcut displays a notification explaining how to install it. See `INSTALL.md` for distribution-specific installation instructions.
+
+---
+
 ## Default Keyboard Shortcuts
 
 | Action | Shortcut |
 |---|---|
+| Open launcher | `Super + /` |
 | Focus window left / right / up / down | `Super + Alt + Arrows` or `Super + H / J / K / L` |
 | Toggle auto-tiling on or off | `Super + T` |
 | Toggle floating (free) window | `Super + F` |
