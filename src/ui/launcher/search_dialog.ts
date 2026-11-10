@@ -8,7 +8,6 @@ import Gio from 'gi://Gio';
 import Pango from 'gi://Pango';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
-import Gdk from 'gi://Gdk';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { ModalDialog } from 'resource:///org/gnome/shell/ui/modalDialog.js';
 import * as Util from 'resource:///org/gnome/shell/misc/util.js';
@@ -396,16 +395,28 @@ export class SearchDialog {
 
     private on_key_press(event: Clutter.Event): boolean {
         const symbol = event.get_key_symbol();
-        const key = Gdk.keyval_name(Gdk.keyval_to_upper(symbol)) ?? '';
 
-        if (symbol === Clutter.KEY_Escape || key === 'Escape') {
+        if (symbol === Clutter.KEY_Escape) {
             this.dismiss();
             return Clutter.EVENT_STOP;
         }
 
         const ctrl = Boolean(event.get_state() & Clutter.ModifierType.CONTROL_MASK);
-        const is_down = key === 'Down' || (ctrl && (key === 'J' || key === 'N'));
-        const is_up = key === 'Up' || key === 'ISO_Left_Tab' || (ctrl && (key === 'K' || key === 'P'));
+        const is_down =
+            symbol === Clutter.KEY_Down ||
+            (ctrl &&
+                (symbol === Clutter.KEY_j ||
+                    symbol === Clutter.KEY_J ||
+                    symbol === Clutter.KEY_n ||
+                    symbol === Clutter.KEY_N));
+        const is_up =
+            symbol === Clutter.KEY_Up ||
+            symbol === Clutter.KEY_ISO_Left_Tab ||
+            (ctrl &&
+                (symbol === Clutter.KEY_k ||
+                    symbol === Clutter.KEY_K ||
+                    symbol === Clutter.KEY_p ||
+                    symbol === Clutter.KEY_P));
 
         if (is_up || is_down) {
             const now = global.get_current_time();
@@ -420,7 +431,7 @@ export class SearchDialog {
 
         this.last_trigger = global.get_current_time();
 
-        if (symbol === Clutter.KEY_Tab || key === 'Tab') {
+        if (symbol === Clutter.KEY_Tab) {
             this.complete();
             return Clutter.EVENT_STOP;
         }
@@ -428,36 +439,23 @@ export class SearchDialog {
         if (
             symbol === Clutter.KEY_Return ||
             symbol === Clutter.KEY_KP_Enter ||
-            symbol === Clutter.KEY_ISO_Enter ||
-            key === 'Return'
+            symbol === Clutter.KEY_ISO_Enter
         ) {
             this.activate_id(this.active_id);
             return Clutter.EVENT_STOP;
         }
 
-        if (is_up) {
-            this.move_selection(-1);
-            this.select(this.active_id);
+        if (ctrl && symbol >= Clutter.KEY_1 && symbol <= Clutter.KEY_9) {
+            this.activate_id(symbol - Clutter.KEY_1);
             return Clutter.EVENT_STOP;
         }
 
-        if (is_down) {
-            this.move_selection(1);
-            this.select(this.active_id);
-            return Clutter.EVENT_STOP;
-        }
-
-        if (ctrl && /^[1-9]$/.test(key)) {
-            this.activate_id(Number(key) - 1);
-            return Clutter.EVENT_STOP;
-        }
-
-        if (ctrl && key === 'Q') {
+        if (ctrl && (symbol === Clutter.KEY_q || symbol === Clutter.KEY_Q)) {
             this.quit(this.active_id);
             return Clutter.EVENT_STOP;
         }
 
-        if (key === 'Copy' || (ctrl && (key === 'C' || key === 'Insert'))) {
+        if (ctrl && (symbol === Clutter.KEY_c || symbol === Clutter.KEY_C || symbol === Clutter.KEY_Insert)) {
             if (!this.text.get_selection()) {
                 this.copy(this.active_id);
                 this.dismiss();

@@ -90,5 +90,25 @@ The overlay scrollbar in the launcher overlapped the right side of the search re
 **Prevention rule:**
 For GNOME-style overlay scrollbars in `StScrollView`, never rely on `margin-right` on the scroll child because `StScrollView` ignores it. Always use `padding-right` on the container `StBoxLayout` to inset list rows away from the scrollbar. For proportional spacing matching thumb width `W`, use `min-width: 3 * W` with `border: W solid transparent` on the handle.
 
+---
+
+## Forbidden Gdk Imports in Extension Process
+
+**Date:** 2026-11-10
+**Category:** Outdated knowledge
+
+**What happened:**
+The GitHub Actions release build failed during the check for forbidden `gi://Gdk` imports in extension files.
+
+**Root cause:**
+`src/ui/launcher/search_dialog.ts` imported `gi://Gdk` to convert key symbols (`Gdk.keyval_name`, `Gdk.keyval_to_upper`). GNOME Shell extensions run inside the Shell compositor process, where Gdk is strictly forbidden to prevent conflicts with Clutter and Mutter.
+
+**How it was fixed:**
+Replaced `Gdk` with standard `Clutter.KEY_*` constants for all keyboard navigation and shortcuts, and removed `import Gdk from 'gi://Gdk'`.
+
+**Prevention rule:**
+Never import `gi://Gdk` in GNOME Shell extension files outside preferences (`prefs.js` / `color_dialog`). Use `Clutter.KEY_*` constants and Clutter events for all keyboard input.
+
+
 
 
