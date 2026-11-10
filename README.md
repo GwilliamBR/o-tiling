@@ -24,7 +24,7 @@ O-Tiling is a fork of [System76 Pop Shell](https://github.com/pop-os/shell), wit
 Open a terminal and run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/oliwebd/o-tiling/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/GwilliamBR/o-tiling/main/install.sh | bash
 ```
 
 The script automatically checks for `pop-launcher`, prompts to install it if missing, and installs the extension.

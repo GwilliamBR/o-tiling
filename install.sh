@@ -2,6 +2,7 @@
 set -euo pipefail
 
 UUID="o-tiling@oliwebd.github.com"
+REPO="${O_TILING_REPO:-GwilliamBR/o-tiling}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Ensure not running as root
@@ -134,7 +135,7 @@ install_extension() {
         local zip_path="$tmp_dir/$UUID.zip"
 
         local release_url
-        release_url=$(curl -sSL "https://api.github.com/repos/oliwebd/o-tiling/releases/latest" \
+        release_url=$(curl -sSL "https://api.github.com/repos/${REPO}/releases/latest" \
             | grep "browser_download_url.*zip" \
             | cut -d : -f 2,3 \
             | tr -d '"' \

@@ -43,7 +43,7 @@ The calculator needs `qalc` (package `libqalculate` on Fedora and Arch, `qalc` o
 ## 3. Build and install O-tiling
 
 ```sh
-git clone https://github.com/oliwebd/o-tiling
+git clone https://github.com/GwilliamBR/o-tiling
 cd o-tiling
 pnpm install
 pnpm run lint
